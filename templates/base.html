@@ -21,26 +21,6 @@
 
                 <nav class="sidebar-nav">
                     <div class="nav-section">
-                        <h2 class="nav-title">Main</h2>
-                        <ul>
-                            <li>
-                                <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
-                                    <span class="nav-icon"> <img class="icon-img" src="/static/img/dashboardIcon.png" alt=""> </span>
-                                    Dashboard
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ url_for('performance_comparison') }}" class="nav-link {% if request.endpoint == 'performance_comparison' %}active{% endif %}">
-                                    <span class="nav-icon"> <img class="icon-img" src="static/img/performanceComparisonIcon.png" alt=""> </span>
-                                    Performance Comparison
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                    
-                    <hr>
-
-                    <div class="nav-section">
                         <h2 class="nav-title">Inventory</h2>
                         <ul>
                             <li>
@@ -69,12 +49,7 @@
                                     Sales Report
                                 </a>
                             </li>
-                            <li>
-                                <a href="{{ url_for('sales_forecast') }}" class="nav-link {% if request.endpoint == 'sales_forecast' %}active{% endif %}">
-                                    <span class="nav-icon"> <img class="icon-img" src="static/img/salesForecastIcon.png" alt=""> </span>
-                                    Sales Forecast
-                                </a>
-                            </li>
+                            <!-- Removed Sales Forecast link -->
                             <li>
                                 <a href="{{ url_for('pos') }}" class="nav-link {% if request.endpoint == 'pos' %}active{% endif %}">
                                     <span class="nav-icon"><img class="icon-img" src="static/img/posIcon.png" alt=""></span>
