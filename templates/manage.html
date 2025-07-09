@@ -1,0 +1,582 @@
+{% extends "base.html" %}
+
+{% block title %}Manage - Economystique{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/manage.css') }}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+{% endblock %}
+
+<!-- {% block header_title %}Manage{% endblock %} --> 
+
+{% block content %}
+<h1>Manage Products</h1>
+<div class="content-header">
+    <p class="subtitle">Manage your inventory fast, and efficient</p>
+    <br>
+</div>
+
+<!--for tabs-->
+<div class="tab-container">
+    <button class="tab-btn active" data-target="restock">Restock Product</button>
+    <button class="tab-btn" data-target="add-new">Add New Product</button>
+</div>
+
+<!-- ─────────────── TAB: RESTOCK ─────────────── -->
+<div class="whole-container-tab">
+    <div class="content-container" id="restock">
+        <div class="restock-container">
+            <div class="adding-section">
+                <!--forms for adding-->
+                <div class="form-group">
+                    <div class="form-product">
+                        <label>Inventory ID/Description</label>
+                        <br>
+                        <!--Kim-->
+                        <!--search-select thingy-->
+                        <select id="product-select">
+                            <option value="">Select a product</option>
+                            {% for inv_id, inv_desc, unit in products %}
+                                <option value="{{ inv_id }}" data-unit="{{ unit }}">{{ inv_id }} - {{ inv_desc }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <br><br>
+                    <div class="form-quantity">
+                        <label>Quantity <span id="unit-label" style="color:gray; font-size:0.95em;"></span></label>
+                        <br>
+                        <input type="number" placeholder="Enter quantity">
+                    </div>
+                    <br><br>
+                    <div class="form-cost">
+                        <label>Cost</label>
+                        <br>
+                        <input type="number" placeholder="Enter cost">
+                    </div>
+                    <br><br>
+                    <div class="form-date">
+                        <label>Expiration Date</label>
+                        <br>
+                        <input type="date">
+                    </div>
+                </div>
+            </div>
+            <!--for table reflection of added-->
+            <div class="table-section">
+                <div class="table-wrapper">
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Inventory ID</th>
+                                <th>Inventory Description</th>
+                                <th>Quantity</th>
+                                <th>Cost</th>
+                                <th>Expiration Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--for add and clear all buttons-->
+        <div class="action-buttons-one">
+            <button class="btn btn-add">Add</button>
+            <button class="btn btn-clear">Clear All</button>
+        </div>
+
+        <!--for confirm and cancel buttons-->
+        <div class="action-buttons-two">
+            <button class="btn btn-confirm">Confirm</button>
+            <button class="btn btn-cancel">Cancel</button>
+        </div>
+</div>
+
+<!-- ─────────────── TAB: ADD NEW ─────────────── -->
+<div class="content-container-add" id="add-new" style="display:none;">
+    <div class="add-new-wrapper">
+        <!-- header -->
+        <div class="add-head">
+            <span class="info-icon">ℹ️</span>
+            <h3>Inventory Information</h3>
+        </div>
+        <hr>
+
+        <!-- two‑column form grid -->
+        <div class="add-form-grid">
+            <!-- LEFT COLUMN -->
+            <div class="add-col">
+                <div class="form-row">
+                    <label>Inventory ID</label>
+                    <input type="text" value="{{ next_inv_id }}" readonly style="background-color: #f0f0f0;">
+                </div>
+
+                <div class="form-row">
+                    <label>Inventory Description</label>
+                    <input type="text" placeholder="Enter a product description">
+                </div>
+                
+                <div class="form-row">
+                    <label>Category</label>
+                    <div class="custom-dropdown">
+                        <input type="text" id="category-input" placeholder="Select or type a new category" list="category-list">
+                        <datalist id="category-list">
+                            <option value="">Select a category</option>
+                        </datalist>
+                    </div>
+                    <small style="color: #666; font-size: 12px; margin-top: 4px; display: block;">
+                        Type to search existing categories or type a new one
+                    </small>
+                </div>
+
+                <div class="form-row">
+                    <label>Subcategory</label>
+                    <div class="custom-dropdown">
+                        <input type="text" id="subcategory-input" placeholder="Select or type a new subcategory" list="subcategory-list">
+                        <datalist id="subcategory-list">
+                            <option value="">Select a subcategory</option>
+                        </datalist>
+                    </div>
+                    <small style="color: #666; font-size: 12px; margin-top: 4px; display: block;">
+                        Type to search existing subcategories or type a new one
+                    </small>
+                </div>
+
+                <div class="form-row">
+                    <label>Unit</label>
+                    <input type="text" placeholder="Enter product unit">
+                </div>
+
+                <div class="form-row">
+                    <label>Reorder Point</label>
+                    <input type="number" placeholder="Enter product reorder point">
+                </div>
+
+                <!-- FOR QUANTITY WHEN NECESSARY
+                <div class="form-row">
+                    <label>Quantity</label>
+                    <input type="number" placeholder="Enter product quantity">
+                </div>
+                -->
+            </div>
+
+            <!-- RIGHT COLUMN -->
+            <div class="add-col">
+                <div class="form-row">
+                    <label>Barcode <span style="color: #888; font-weight: normal;">(optional)</span></label>
+                    <input type="text" placeholder="Enter a product barcode">
+                </div>
+    
+                <div class="form-row">
+                    <label>Price</label>
+                    <input type="number" placeholder="Enter product price">
+                </div>
+    
+                <div class="form-row">
+                    <label>Cost</label>
+                    <input type="number" placeholder="Enter product cost">
+                </div>
+
+                <div class="form-row">
+                    <label>Image<span style="color: #888; font-weight: normal;">(optional)</span></label>
+                    <div class="image-box" id="image-preview">
+                        <!-- simple placeholder icon -->
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <circle cx="8" cy="8" r="2"/>
+                            <polyline points="21 15 16 10 5 21"/>
+                        </svg>
+                    </div>
+                    <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                    <button class="btn btn-add-img" id="upload-btn">Upload</button>
+                    <button class="btn btn-remove-img" id="remove-btn" style="display: none; margin-left: 10px; background-color: #dc3545; color: white; border: 1px solid #dc3545;">Remove</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- action buttons -->
+        <div class="add-actions">
+            <button class="btn add-cancel">Cancel</button>
+            <button class="btn add-confirm">Confirm</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!--Kim-->
+<!--search dropdown import-->
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const tabButtons = document.querySelectorAll(".tab-btn");
+        const contentContainers = document.querySelectorAll("[id='restock'], [id='add-new']");
+
+        const actionButtonsOne = document.querySelector(".action-buttons-one");
+        const actionButtonsTwo = document.querySelector(".action-buttons-two");
+        const addActions = document.querySelector(".add-actions");
+
+        tabButtons.forEach(button => {
+            button.addEventListener("click", () => {
+                // Remove active from all buttons
+                tabButtons.forEach(btn => btn.classList.remove("active"));
+                // Hide all content containers
+                contentContainers.forEach(container => container.style.display = "none");
+
+                // Activate clicked button
+                button.classList.add("active");
+                const targetId = button.getAttribute("data-target");
+                const targetContainer = document.getElementById(targetId);
+                targetContainer.style.display = "block";
+
+                // Show appropriate buttons based on selected tab
+                const showRestock = (targetId === "restock");
+                const showAddNew = (targetId === "add-new");
+                
+                actionButtonsOne.style.display = showRestock ? "flex" : "none";
+                actionButtonsTwo.style.display = showRestock ? "flex" : "none";
+                addActions.style.display = showAddNew ? "flex" : "none";
+            });
+        });
+
+        // On load, show buttons for the active tab
+        const defaultTarget = document.querySelector(".tab-btn.active").getAttribute("data-target");
+        const showRestock = (defaultTarget === "restock");
+        const showAddNew = (defaultTarget === "add-new");
+        
+        actionButtonsOne.style.display = showRestock ? "flex" : "none";
+        actionButtonsTwo.style.display = showRestock ? "flex" : "none";
+        addActions.style.display = showAddNew ? "flex" : "none";
+
+        const productSelect = document.getElementById("product-select");
+        const unitLabel = document.getElementById("unit-label");
+        function updateUnitLabel() {
+            const selected = productSelect.options[productSelect.selectedIndex];
+            const unit = selected.getAttribute("data-unit");
+            if (unit) {
+                unitLabel.textContent = `(per ${unit})`;
+            } else {
+                unitLabel.textContent = '';
+            }
+        }
+        productSelect.addEventListener("change", updateUnitLabel);
+        updateUnitLabel(); // initialize on load
+
+        // Fetch and display restock cart on load
+        function loadRestockCart() {
+            fetch('/api/restock_cart')
+                .then(response => response.json())
+                .then(cart => {
+                    tableBody.innerHTML = '';
+                    cart.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${item.inv_id}</td>
+                            <td>${item.inv_desc}</td>
+                            <td>${item.quantity}</td>
+                            <td>${item.cost}</td>
+                            <td>${item.exp_date}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                });
+        }
+        loadRestockCart();
+
+        // Add to table logic
+        const addBtn = document.querySelector('.btn-add');
+        const clearBtn = document.querySelector('.btn-clear');
+        const tableBody = document.querySelector('.inventory-table tbody');
+        const quantityInput = document.querySelector('.form-quantity input');
+        const costInput = document.querySelector('.form-cost input');
+        const dateInput = document.querySelector('.form-date input');
+
+        addBtn.addEventListener('click', function() {
+            const selected = productSelect.options[productSelect.selectedIndex];
+            const invIdDesc = selected.text;
+            const invId = selected.value;
+            const quantity = quantityInput.value;
+            const cost = costInput.value;
+            const expDate = dateInput.value;
+
+            // Validate required fields
+            if (!invId || !quantity || !cost || !expDate) {
+                alert('Please fill in all fields before adding to restock cart.');
+                return;
+            }
+
+            // Split invIdDesc to get ID and Description
+            const [id, ...descArr] = invIdDesc.split(' - ');
+            const desc = descArr.join(' - ');
+
+            // Send to backend
+            fetch('/api/restock_cart/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    inv_id: id,
+                    inv_desc: desc,
+                    quantity: quantity,
+                    cost: cost,
+                    exp_date: expDate
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadRestockCart();
+                    // Clear form fields
+                    productSelect.selectedIndex = 0;
+                    quantityInput.value = '';
+                    costInput.value = '';
+                    dateInput.value = '';
+                    updateUnitLabel();
+                } else {
+                    alert('Failed to add to restock cart.');
+                }
+            })
+            .catch(() => {
+                alert('Failed to add to restock cart.');
+            });
+        });
+
+        clearBtn.addEventListener('click', function() {
+            fetch('/api/restock_cart/clear', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        tableBody.innerHTML = '';
+                        loadRestockCart();
+                    } else {
+                        alert('Failed to clear restock cart.');
+                    }
+                })
+                .catch(() => {
+                    alert('Failed to clear restock cart.');
+                });
+        });
+
+        // Confirm button logic
+        const confirmBtn = document.querySelector('.btn-confirm');
+        confirmBtn.addEventListener('click', function() {
+            // Prevent confirm if cart is empty
+            if (!tableBody || tableBody.children.length === 0) {
+                alert('Restock cart is empty. Please add at least one item.');
+                return;
+            }
+            fetch('/api/restock_cart/confirm', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        tableBody.innerHTML = '';
+                        alert('Restock confirmed and inventory updated!');
+                    } else {
+                        alert('Failed to confirm restock.');
+                    }
+                })
+                .catch(() => {
+                    alert('Failed to confirm restock.');
+                });
+        });
+
+        // Add New Product form handling
+        const addNewForm = document.querySelector('#add-new');
+        const addConfirmBtn = document.querySelector('.add-confirm');
+        const addCancelBtn = document.querySelector('.add-cancel');
+
+        addConfirmBtn.addEventListener('click', function() {
+            // Get form values
+            const invDesc = addNewForm.querySelector('input[placeholder="Enter a product description"]').value.trim();
+            const barcode = addNewForm.querySelector('input[placeholder="Enter a product barcode"]').value.trim();
+            const category = categoryInput.value.trim();
+            const subcategory = subcategoryInput.value.trim();
+            const unit = addNewForm.querySelector('input[placeholder="Enter product unit"]').value.trim();
+            const reorderPoint = addNewForm.querySelector('input[placeholder="Enter product reorder point"]').value.trim();
+            const price = addNewForm.querySelector('input[placeholder="Enter product price"]').value.trim();
+            const cost = addNewForm.querySelector('input[placeholder="Enter product cost"]').value.trim();
+
+            // Validate required fields (all except image)
+            if (!invDesc || !category || !subcategory || !unit || !reorderPoint || !price || !cost) {
+                alert('Please fill in all required fields before confirming.');
+                return;
+            }
+
+            // Process image if selected
+            const processImage = () => {
+                return new Promise((resolve) => {
+                    if (selectedImageFile) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            // Convert to base64 and remove data URL prefix
+                            const base64Data = e.target.result.split(',')[1];
+                            resolve(base64Data);
+                        };
+                        reader.readAsDataURL(selectedImageFile);
+                    } else {
+                        resolve(null);
+                    }
+                });
+            };
+
+            // Process image and send data
+            processImage().then(imageData => {
+                fetch('/api/add_new_product', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        inv_desc: invDesc,
+                        barcode: barcode,
+                        category: category,
+                        subcategory: subcategory,
+                        unit: unit,
+                        reorder_point: parseInt(reorderPoint) || 0,
+                        price: parseFloat(price) || 0.0,
+                        cost: parseFloat(cost) || 0.0,
+                        image: imageData
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(`Product added successfully! Inventory ID: ${data.inv_id}`);
+                        // Clear form
+                        addNewForm.querySelectorAll('input').forEach(input => {
+                            if (!input.readOnly) input.value = '';
+                        });
+                        // Clear inputs
+                        categoryInput.value = '';
+                        subcategoryInput.value = '';
+                        // Clear image preview
+                        clearImagePreview();
+                        // Refresh the page to update the inventory ID
+                        location.reload();
+                    } else {
+                        alert('Failed to add product: ' + data.message);
+                    }
+                })
+                .catch(() => {
+                    alert('Failed to add product.');
+                });
+            });
+        });
+
+        addCancelBtn.addEventListener('click', function() {
+            // Clear all form fields in Add New Product
+            addNewForm.querySelectorAll('input').forEach(input => input.value = '');
+            // Redirect to products page
+            window.location.href = '/products';
+        });
+
+        // Image upload functionality
+        const imageUpload = document.getElementById('image-upload');
+        const uploadBtn = document.getElementById('upload-btn');
+        const removeBtn = document.getElementById('remove-btn');
+        const imagePreview = document.getElementById('image-preview');
+        let selectedImageFile = null;
+
+        uploadBtn.addEventListener('click', function() {
+            imageUpload.click();
+        });
+
+        imageUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select a valid image file.');
+                    return;
+                }
+                
+                // Validate file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Image size should be less than 5MB.');
+                    return;
+                }
+
+                selectedImageFile = file;
+                displayImagePreview(file);
+                uploadBtn.style.display = 'none';
+                removeBtn.style.display = 'inline-block';
+            }
+        });
+
+        removeBtn.addEventListener('click', function() {
+            clearImagePreview();
+        });
+
+        function displayImagePreview(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">`;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearImagePreview() {
+            imagePreview.innerHTML = `
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="8" cy="8" r="2"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                </svg>
+            `;
+            imageUpload.value = '';
+            selectedImageFile = null;
+            uploadBtn.style.display = 'inline-block';
+            removeBtn.style.display = 'none';
+        }
+
+        const cancelBtn = document.querySelector('.btn-cancel');
+        cancelBtn.addEventListener('click', function() {
+            window.location.href = '/products';
+        });
+        //Kim
+        //for search dropdown
+        const choices = new Choices(productSelect, {
+            searchEnabled: true,
+            itemSelectText: '',
+            shouldSort: false,
+            placeholder: true,
+            placeholderValue: 'Select a product'
+        });
+
+        // Initialize category and subcategory inputs
+        const categoryInput = document.getElementById('category-input');
+        const subcategoryInput = document.getElementById('subcategory-input');
+        const categoryList = document.getElementById('category-list');
+        const subcategoryList = document.getElementById('subcategory-list');
+        
+        // Load categories and subcategories from database
+        function loadCategories() {
+            fetch('/api/get_categories')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Populate category datalist
+                        data.categories.forEach(category => {
+                            const option = document.createElement('option');
+                            option.value = category;
+                            categoryList.appendChild(option);
+                        });
+                        
+                        // Populate subcategory datalist
+                        data.subcategories.forEach(subcategory => {
+                            const option = document.createElement('option');
+                            option.value = subcategory;
+                            subcategoryList.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading categories:', error);
+                });
+        }
+        
+        loadCategories();
+    });
+</script>
+{% endblock %}

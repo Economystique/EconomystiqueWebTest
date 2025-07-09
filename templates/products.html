@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Products - Economystique{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/products.css') }}?v=2">
+{% endblock %}
+
+<!-- {% block header_title %}Product List{% endblock %} --> 
+
+{% block content %}
+<h1>Product List</h1>
+<div class="content-header">
+    <p class="subtitle">Manage your inventory fast, and efficient</p>
+    <br>
+</div>
+
+<div class="content">
+    <div class="table-toolbar">
+        <div class="search-section">
+            <div class="search-container">
+                <input type="text" placeholder="Search" class="search-input">
+            </div>
+            <div class="dropdown">
+                <button class="btn btn-category" id="categoryBtn">
+                    <span class="icon">⇩</span>
+                    <span id="selectedCategory">All Categories</span>
+                </button>
+                <div id="categoryDropdown" class="dropdown-content">
+                    <a data-category="all">All Categories</a>
+                    {% for category in categories %}
+                    <a data-category="{{ category }}">{{ category }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            <button onclick="location.href='{{ url_for('manage') }}'" class="btn btn-restock">
+                <span class="icon"><img class="icon-img" src="static/img/manageIcon.png" alt=""></span>
+                <span class="btn-text">Manage</span>
+            </button>
+        </div>
+
+        <div class="action-buttons">
+            <!--<button class="btn btn-wastage" id="openModalBtn">
+                <span class="icon"><img class="icon-img" src="static/img/declareWastageIcon.png" alt=""></span>
+                Declare Wastage
+            </button>-->
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="inventory-table">
+            <thead>
+                <tr>
+                    <th>Inventory ID</th>
+                    <th>Inventory Description</th>
+                    <th>Category</th>
+                    <th>Subcategory</th>
+                    <th>Quantity</th>
+                    <th>ROP</th>
+                    <th>Unit</th>
+                    <!--<th></th>-->
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr data-category="{{ product.cat }}">
+                    <td>{{ product.inv_id }}</td>
+                    <td>{{ product.inv_desc }}</td>
+                    <td>{{ product.cat }}</td>
+                    <td>{{ product.sub_cat }}</td>
+                    <td>{{ product.quantity }}</td>
+                    <td>{{ product.rop }}</td>
+                    <td>{{ product.unit }}</td>
+                    <!--<td class="actions">
+                        <button class="action-btn.edit" title="Edit"> <img class="icon-img" src="static/img/editIcon.png" alt=""> </button>
+                    </td>-->
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="pagination-container">
+            <ul class="pagination">
+                <li class="page-item" id="prevPageBtn"><span>&laquo;</span></li>
+                <!-- Page numbers will be injected here -->
+                <li class="page-item" id="nextPageBtn"><span>&raquo;</span></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL -->
+{% include 'components/declare_wastage_modal.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    /* ────────── DOM refs ────────── */
+    const categoryBtn       = document.getElementById('categoryBtn');
+    const categoryDropdown  = document.getElementById('categoryDropdown');
+    const selectedCategory  = document.getElementById('selectedCategory');
+    const searchInput       = document.querySelector('.search-input');
+    const tableRows         = Array.from(document.querySelectorAll('.inventory-table tbody tr'));
+    const pagination        = document.querySelector('.pagination');
+    const prevBtn           = document.getElementById('prevPageBtn');
+    const nextBtn           = document.getElementById('nextPageBtn');
+
+    /* ────────── state ────────── */
+    let currentPage   = 1;
+    const rowsPerPage = 10;
+    let filteredRows  = [...tableRows];
+
+    /* ────────── helpers ────────── */
+    function createPageItem(text, page = null, isActive = false, isEllipsis = false) {
+        const li = document.createElement('li');
+        li.classList.add('page-item');
+        if (isEllipsis) {
+            li.classList.add('ellipsis');
+            li.textContent = '...';
+        } else {
+            li.classList.add('numbered');
+            li.textContent = text;
+            li.dataset.page = page;
+            if (isActive) li.classList.add('active');
+            li.addEventListener('click', () => {
+                currentPage = page;
+                showPage(currentPage);
+            });
+        }
+        return li;
+    }
+
+    function buildPagination() {
+        /* wipe old */
+        pagination.querySelectorAll('.page-item.numbered, .page-item.ellipsis').forEach(e => e.remove());
+
+        const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+        if (totalPages <= 1) return;          // no pager needed
+
+        const maxVisible = 5;
+        const buffer     = 2;                 // pages shown around current
+        const start      = Math.max(2, currentPage - buffer);
+        const end        = Math.min(totalPages - 1, currentPage + buffer);
+
+        // Always show first page
+        pagination.insertBefore(createPageItem(1, 1, currentPage === 1), nextBtn);
+
+        /* leading … */
+        if (start > 2) {
+            pagination.insertBefore(createPageItem('...', null, false, true), nextBtn);
+        }
+
+        /* window */
+        for (let i = start; i <= end; i++) {
+            pagination.insertBefore(createPageItem(i, i, currentPage === i), nextBtn);
+        }
+
+        /* trailing … */
+        if (end < totalPages - 1) {
+            pagination.insertBefore(createPageItem('...', null, false, true), nextBtn);
+        }
+
+        /* last page */
+        if (totalPages > 1) {
+            pagination.insertBefore(
+                createPageItem(totalPages, totalPages, currentPage === totalPages),
+                nextBtn
+            );
+        }
+    }
+
+    function showPage(page) {
+        const start = (page - 1) * rowsPerPage;
+        const end   = start + rowsPerPage;
+
+        tableRows.forEach(r => r.style.display = 'none');
+        filteredRows.slice(start, end).forEach(r => r.style.display = '');
+
+        currentPage = page;
+        buildPagination();
+    }
+
+    /* ────────── filtering ────────── */
+    function applyFilters() {
+        const cat  = selectedCategory.textContent === 'All Categories'
+                        ? 'all' : selectedCategory.textContent;
+        const term = searchInput.value.toLowerCase();
+
+        filteredRows = tableRows.filter(row => {
+            const matchesCat   = (cat === 'all') || row.getAttribute('data-category') === cat;
+            const matchesTerm  = row.textContent.toLowerCase().includes(term);
+            return matchesCat && matchesTerm;
+        });
+
+        currentPage = 1;
+        showPage(currentPage);
+    }
+
+    /* ────────── category dropdown ────────── */
+    categoryBtn.onclick = () => categoryDropdown.classList.toggle('show');
+    window.addEventListener('click', e => {
+        if (!categoryBtn.contains(e.target)) categoryDropdown.classList.remove('show');
+    });
+    categoryDropdown.addEventListener('click', e => {
+        if (e.target.tagName === 'A') {
+            selectedCategory.textContent = e.target.textContent;
+            document.querySelectorAll('.dropdown-content a').forEach(a => a.classList.remove('active-category'));
+            e.target.classList.add('active-category');
+            categoryDropdown.classList.remove('show');
+            applyFilters();
+        }
+    });
+
+    /* ────────── search ────────── */
+    searchInput.addEventListener('input', applyFilters);
+
+    /* ────────── prev / next ────────── */
+    prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; showPage(currentPage);} };
+    nextBtn.onclick = () => {
+        const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+        if (currentPage < totalPages) { currentPage++; showPage(currentPage); }
+    };
+
+    applyFilters();  
+});
+</script>
+{% endblock %}

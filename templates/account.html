@@ -1,0 +1,582 @@
+{% extends "base.html" %}
+
+{% block title %}Account Profile - Economystique{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/account.css') }}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/css/intlTelInput.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="whole-container">
+
+    <!-- PERSONAL CARD -->
+    <form id="personalForm" class="card personal-container" onsubmit="updateProfile(event)">
+        <button id="editBtn" class="edit-btn" type="button" onclick="toggleEdit()">Edit</button>
+        <button id="saveBtn" class="save-btn" type="submit" style="display: none;">Save</button>
+
+        <div class="avatar-circle">
+            <img id="avatarImg" class="avatar-img" src="{{ url_for('avatar_image', username=user_data.user_name) }}" alt="Avatar">
+            <button id="avatarUploadBtn" class="avatar-upload-btn" type="button" title="Change Avatar" style="display: none;">+</button>
+            <input type="file" id="avatarInput" class="file-upload-input" accept="image/*">
+        </div>
+
+        <div class="personal-text">
+            <p class="section-label" id="titleLabel">{{ user_data.title or 'Select Title' }}</p>
+            <select name="title" id="titleSelect" class="editable-select" style="display: none;">
+                <option value="">Select Title</option>
+                <option value="Business Owner" {{ 'selected' if user_data.title == 'Business Owner' else '' }}>Business Owner</option>
+                <option value="Employee" {{ 'selected' if user_data.title == 'Employee' else '' }}>Employee</option>
+            </select>
+            
+            <h2 class="owner-name" id="ownerNameText">{{ user_data.owner_name or 'Input your name' }}</h2>
+            <input type="text" name="owner_name" id="ownerNameInput" value="{{ user_data.owner_name or '' }}" placeholder="Input your name" class="editable-input" style="display: none;">
+
+            <p class="info-line">
+                <span class="info-label">Contact Information:</span>
+                <span id="contactText">{{ user_data.contact or 'Input contact information' }}</span>
+                <input type="tel" name="contact" id="contactInput" value="{{ user_data.contact or '' }}" placeholder="Input contact information" class="editable-input" style="display: none;">
+            </p>
+            <br>
+            <p class="info-line">
+                <a href="#" class="change-username-link" onclick="showChangeUsernameModal(); return false;">Change Login Username</a>
+            </p>
+        </div>
+    </form>
+
+    <!-- BUSINESS CARD -->
+    <form id="businessForm" class="card business-container" onsubmit="updateBusiness(event)">
+        <button id="editBusinessBtn" class="edit-btn" type="button" onclick="toggleBusinessEdit()">Edit</button>
+        <button id="saveBusinessBtn" class="save-btn" type="submit" style="display: none;">Save</button>
+        
+        <div class="biz-logo">
+            <img id="bizLogoImg" class="biz-logo-img" src="{{ url_for('biz_logo_image', username=user_data.user_name) }}" alt="Business Logo">
+            <button id="bizLogoUploadBtn" class="bizlogo-upload-btn" type="button" title="Change Logo" style="display: none;">+</button>
+            <input type="file" id="bizLogoInput" class="file-upload-input" accept="image/*">
+        </div>
+
+        <div class="biz-text">
+            <p class="section-label">Business Information</p>
+            <h2 class="biz-name" id="bizNameText">{{ user_data.biz_name or 'Input business name' }}</h2>
+            <input type="text" name="biz_name" id="bizNameInput" value="{{ user_data.biz_name or '' }}" placeholder="Input business name" class="editable-input" style="display: none;">
+
+            <p class="info-line">
+                <span class="info-label">Industry:</span>
+                <span id="industryText">{{ user_data.industry or 'Input industry' }}</span>
+                <input type="text" name="industry" id="industryInput" value="{{ user_data.industry or '' }}" placeholder="Input industry" class="editable-input" style="display: none;">
+            </p>
+
+            <p class="info-line">
+                <span class="info-label">Business Type:</span>
+                <span id="bizTypeText">{{ user_data.biz_type or 'Input business type' }}</span>
+                <input type="text" name="biz_type" id="bizTypeInput" value="{{ user_data.biz_type or '' }}" placeholder="Input business type" class="editable-input" style="display: none;">
+            </p>
+
+            <p class="info-line">
+                <span class="info-label">Address:</span>
+                <span id="addressText">{{ user_data.address or 'Input business address' }}</span>
+                <input type="text" name="address" id="addressInput" value="{{ user_data.address or '' }}" placeholder="Input business address" class="editable-input" style="display: none;">
+            </p>
+        </div>
+    </form>
+
+    <!-- Edit Conflict Modal -->
+    <div id="editConflictModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Please Save First</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p id="modalMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal()" class="modal-btn">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Username Modal -->
+    <div id="changeUsernameModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Change Username</h3>
+                <span class="close" onclick="closeChangeUsernameModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="changeUsernameForm" onsubmit="changeUsername(event)">
+                    <div class="form-group">
+                        <label for="currentUsername">Current Username</label>
+                        <input type="text" id="currentUsername" value="{{ user_data.user_name }}" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newUsername">New Username</label>
+                        <input type="text" id="newUsername" name="new_username" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmPassword">Enter Password</label>
+                        <input type="password" id="confirmPassword" name="password" required>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="submit" class="modal-btn">Change Username</button>
+                        <button type="button" onclick="closeChangeUsernameModal()" class="modal-btn modal-btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Success</h3>
+                <span class="close" onclick="closeSuccessModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Changes saved successfully!</p>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeSuccessModal()" class="modal-btn">OK</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/intlTelInput.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/imask/7.6.0/imask.min.js"></script>
+<script>
+// Global variable to track edit state
+let isPersonalEditing = false;
+let isBusinessEditing = false;
+
+// Hide both plus buttons on page load
+window.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('avatarUploadBtn').style.display = 'none';
+    document.getElementById('bizLogoUploadBtn').style.display = 'none';
+    
+    // Placeholder for empty fields
+    applyPlaceholderStyling();
+    // Initialize intl-tel-input and input mask for contact field
+    var contactInput = document.querySelector('#contactInput');
+    var contactText = document.getElementById('contactText');
+    var iti = null;
+    var mask = null;
+    if (contactInput) {
+        iti = window.intlTelInput(contactInput, {
+            initialCountry: 'ph',
+            nationalMode: false,
+            formatOnDisplay: true,
+            utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js'
+        });
+        mask = IMask(contactInput, {
+            mask: '000-000-0000'
+        });
+        // Hide intl-tel-input UI if not in edit mode
+        if (contactInput.style.display === 'none') {
+            var itiContainer = contactInput.closest('.iti');
+            if (itiContainer) itiContainer.style.display = 'none';
+        }
+        // On page load, format the contactText with country code if value exists
+        if (contactText && contactInput.value) {
+            iti.setNumber(contactInput.value);
+            contactText.textContent = iti.getNumber() || contactInput.value;
+        }
+    }
+});
+
+function applyPlaceholderStyling() {
+    const placeholderTexts = [
+        'Select Title',
+        'Input your name',
+        'Input contact information', 
+        'Input business name',
+        'Input industry',
+        'Input business type',
+        'Input business address'
+    ];
+    
+    const textElements = [
+        'titleLabel',
+        'ownerNameText',
+        'contactText',
+        'bizNameText', 
+        'industryText',
+        'bizTypeText',
+        'addressText'
+    ];
+    
+    textElements.forEach((elementId, index) => {
+        const element = document.getElementById(elementId);
+        if (element && element.textContent === placeholderTexts[index]) {
+            element.classList.add('placeholder-text');
+        }
+    });
+}
+
+function showModal(message) {
+    document.getElementById('modalMessage').textContent = message;
+    document.getElementById('editConflictModal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('editConflictModal').style.display = 'none';
+}
+
+function showChangeUsernameModal() {
+    document.getElementById('changeUsernameModal').style.display = 'block';
+}
+
+function closeChangeUsernameModal() {
+    document.getElementById('changeUsernameModal').style.display = 'none';
+    // Clear form
+    document.getElementById('newUsername').value = '';
+    document.getElementById('confirmPassword').value = '';
+}
+
+function closeSuccessModal() {
+    document.getElementById('successModal').style.display = 'none';
+}
+
+function changeUsername(event) {
+    event.preventDefault();
+    
+    const newUsername = document.getElementById('newUsername').value.trim();
+    const password = document.getElementById('confirmPassword').value;
+    const currentUsername = document.getElementById('currentUsername').value;
+    
+    // Basic validation
+    if (!newUsername) {
+        alert('Please enter a new username.');
+        return;
+    }
+    
+    if (newUsername.length < 3) {
+        alert('Username must be at least 3 characters long.');
+        return;
+    }
+    
+    if (newUsername === currentUsername) {
+        alert('New username must be different from current username.');
+        return;
+    }
+    
+    if (!password) {
+        alert('Please enter your password to confirm.');
+        return;
+    }
+    
+    // Send request to backend
+    fetch('/api/change_username', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            current_username: currentUsername,
+            new_username: newUsername,
+            password: password
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Username changed successfully!');
+            closeChangeUsernameModal();
+            // Update the current username display
+            document.getElementById('currentUsername').value = newUsername;
+            // Optionally reload the page to reflect changes
+            window.location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while changing username.');
+    });
+}
+
+function toggleEdit() {
+    // Check if business is currently being edited
+    if (isBusinessEditing) {
+        showModal('Please save your business information first before editing personal information.');
+        return;
+    }
+    
+    isPersonalEditing = true;
+    const showText = (id, show) => {
+        document.getElementById(id + 'Text').style.display = show ? 'inline' : 'none';
+        document.getElementById(id + 'Input').style.display = show ? 'none' : 'inline-block';
+    };
+    ['ownerName', 'contact'].forEach(id => showText(id, false));
+    
+    // Show/hide title dropdown
+    document.getElementById('titleLabel').style.display = 'none';
+    document.getElementById('titleSelect').style.display = 'inline-block';
+    
+    document.getElementById('editBtn').style.display = 'none';
+    document.getElementById('saveBtn').style.display = 'inline-block';
+    // Show only avatar upload button in user profile edit mode
+    document.getElementById('avatarUploadBtn').style.display = 'flex';
+    document.getElementById('bizLogoUploadBtn').style.display = 'none';
+    // Show intl-tel-input UI
+    var contactInput = document.querySelector('#contactInput');
+    if (contactInput) {
+        var itiContainer = contactInput.closest('.iti');
+        if (itiContainer) itiContainer.style.display = '';
+    }
+}
+
+function toggleBusinessEdit() {
+    // Check if personal is currently being edited
+    if (isPersonalEditing) {
+        showModal('Please save your personal information first before editing business information.');
+        return;
+    }
+    
+    isBusinessEditing = true;
+    const showText = (id, show) => {
+        document.getElementById(id + 'Text').style.display = show ? 'inline' : 'none';
+        document.getElementById(id + 'Input').style.display = show ? 'none' : 'inline-block';
+    };
+    ['bizName', 'industry', 'bizType', 'address'].forEach(id => showText(id, false));
+    document.getElementById('editBusinessBtn').style.display = 'none';
+    document.getElementById('saveBusinessBtn').style.display = 'inline-block';
+    // Show only biz logo upload button in business info edit mode
+    document.getElementById('bizLogoUploadBtn').style.display = 'flex';
+    document.getElementById('avatarUploadBtn').style.display = 'none';
+}
+
+window.updateProfile = function(event) {
+    event.preventDefault();
+    var contactInput = document.getElementById('contactInput');
+    var iti = contactInput && window.intlTelInputGlobals && window.intlTelInputGlobals.getInstance(contactInput);
+    const formData = {
+        title: document.getElementById('titleSelect').value,
+        owner_name: document.getElementById('ownerNameInput').value,
+        contact: iti ? iti.getNumber() : (contactInput ? contactInput.value : '')
+    };
+    fetch('/api/update_personal_profile', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update display text
+            const titleLabel = document.getElementById('titleLabel');
+            const ownerNameText = document.getElementById('ownerNameText');
+            const contactText = document.getElementById('contactText');
+            titleLabel.textContent = formData.title || 'Select Title';
+            ownerNameText.textContent = formData.owner_name || 'Input your name';
+            // Show international format in view mode
+            if (iti && formData.contact) {
+                contactText.textContent = iti.getNumber();
+            } else {
+                contactText.textContent = formData.contact || 'Input contact information';
+            }
+            // Apply placeholder styling if empty
+            if (!formData.title) {
+                titleLabel.classList.add('placeholder-text');
+            } else {
+                titleLabel.classList.remove('placeholder-text');
+            }
+            if (!formData.owner_name) {
+                ownerNameText.classList.add('placeholder-text');
+            } else {
+                ownerNameText.classList.remove('placeholder-text');
+            }
+            if (!formData.contact) {
+                contactText.classList.add('placeholder-text');
+            } else {
+                contactText.classList.remove('placeholder-text');
+            }
+            const showText = (id, show) => {
+                document.getElementById(id + 'Text').style.display = show ? 'inline' : 'none';
+                document.getElementById(id + 'Input').style.display = show ? 'none' : 'inline-block';
+            };
+            ['ownerName', 'contact'].forEach(id => showText(id, true));
+            document.getElementById('titleLabel').style.display = 'inline';
+            document.getElementById('titleSelect').style.display = 'none';
+            document.getElementById('editBtn').style.display = 'inline-block';
+            document.getElementById('saveBtn').style.display = 'none';
+            // Hide avatar upload button after saving
+            document.getElementById('avatarUploadBtn').style.display = 'none';
+            // Hide intl-tel-input UI after saving
+            if (contactInput) {
+                var itiContainer = contactInput.closest('.iti');
+                if (itiContainer) itiContainer.style.display = 'none';
+            }
+            // Reset edit state
+            isPersonalEditing = false;
+            // Show success modal
+            document.getElementById('successModal').style.display = 'block';
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating profile');
+    });
+}
+
+function updateBusiness(event) {
+    event.preventDefault();
+    const formData = {
+        biz_name: document.getElementById('bizNameInput').value,
+        industry: document.getElementById('industryInput').value,
+        biz_type: document.getElementById('bizTypeInput').value,
+        address: document.getElementById('addressInput').value
+    };
+    fetch('/api/update_business_profile', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update display text
+            const bizNameText = document.getElementById('bizNameText');
+            const industryText = document.getElementById('industryText');
+            const bizTypeText = document.getElementById('bizTypeText');
+            const addressText = document.getElementById('addressText');
+            
+            bizNameText.textContent = formData.biz_name || 'Input business name';
+            industryText.textContent = formData.industry || 'Input industry';
+            bizTypeText.textContent = formData.biz_type || 'Input business type';
+            addressText.textContent = formData.address || 'Input business address';
+            
+            // Apply placeholder styling if empty
+            if (!formData.biz_name) {
+                bizNameText.classList.add('placeholder-text');
+            } else {
+                bizNameText.classList.remove('placeholder-text');
+            }
+            
+            if (!formData.industry) {
+                industryText.classList.add('placeholder-text');
+            } else {
+                industryText.classList.remove('placeholder-text');
+            }
+            
+            if (!formData.biz_type) {
+                bizTypeText.classList.add('placeholder-text');
+            } else {
+                bizTypeText.classList.remove('placeholder-text');
+            }
+            
+            if (!formData.address) {
+                addressText.classList.add('placeholder-text');
+            } else {
+                addressText.classList.remove('placeholder-text');
+            }
+            
+            const showText = (id, show) => {
+                document.getElementById(id + 'Text').style.display = show ? 'inline' : 'none';
+                document.getElementById(id + 'Input').style.display = show ? 'none' : 'inline-block';
+            };
+            ['bizName', 'industry', 'bizType', 'address'].forEach(id => showText(id, true));
+            document.getElementById('editBusinessBtn').style.display = 'inline-block';
+            document.getElementById('saveBusinessBtn').style.display = 'none';
+            // Hide biz logo upload button after saving
+            document.getElementById('bizLogoUploadBtn').style.display = 'none';
+            // Reset edit state
+            isBusinessEditing = false;
+            // Show success modal
+            document.getElementById('successModal').style.display = 'block';
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating business information');
+    });
+}
+
+// Close modal when clicking outside of it
+window.onclick = function(event) {
+    const editConflictModal = document.getElementById('editConflictModal');
+    const changeUsernameModal = document.getElementById('changeUsernameModal');
+    const successModal = document.getElementById('successModal');
+    
+    if (event.target == editConflictModal) {
+        closeModal();
+    }
+    if (event.target == changeUsernameModal) {
+        closeChangeUsernameModal();
+    }
+    if (event.target == successModal) {
+        closeSuccessModal();
+    }
+}
+
+// Avatar upload
+const avatarInput = document.getElementById('avatarInput');
+const avatarUploadBtn = document.getElementById('avatarUploadBtn');
+avatarUploadBtn.style.display = 'none';
+avatarUploadBtn.addEventListener('click', function() {
+    avatarInput.click();
+});
+avatarInput.addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('avatar', file);
+    fetch('/api/upload_avatar', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('avatarImg').src = data.avatar_url + '?t=' + new Date().getTime();
+        } else {
+            alert('Avatar upload failed: ' + data.error);
+        }
+    })
+    .catch(() => alert('Avatar upload failed.'));
+});
+
+// Biz logo upload
+const bizLogoInput = document.getElementById('bizLogoInput');
+const bizLogoUploadBtn = document.getElementById('bizLogoUploadBtn');
+bizLogoUploadBtn.style.display = 'none';
+bizLogoUploadBtn.addEventListener('click', function() {
+    bizLogoInput.click();
+});
+bizLogoInput.addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('biz_logo', file);
+    fetch('/api/upload_biz_logo', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('bizLogoImg').src = data.logo_url + '?t=' + new Date().getTime();
+        } else {
+            alert('Logo upload failed: ' + data.error);
+        }
+    })
+    .catch(() => alert('Logo upload failed.'));
+});
+</script>
+{% endblock %}

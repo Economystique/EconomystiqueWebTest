@@ -1,0 +1,785 @@
+/* Global layout */
+.container-monthly {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 0px;
+    background-color: transparent;
+}
+
+.container-yearly {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 0px;
+}
+
+/* Left-side content container */
+.data-container {
+    flex: 1;
+    background-color: transparent;
+    border-radius: 10px;
+    padding: 0px;
+}
+
+/* Tab styling */
+.tab-container {
+    display: flex;
+    flex-direction: column;
+    background-color: transparent;
+}
+
+.tab-header {
+    display: flex;
+    background-color: transparent;
+}
+
+.tab-btn {
+    display: flex;
+    border: 1px solid #89A3AD;
+    background-color: #e8e6e6;
+    color: black;
+    cursor: pointer;
+    border-radius: 8px 8px 0 0;
+    margin-right: 2px;
+    padding: 12px 24px;
+    margin-bottom: 2px;
+}
+
+.tab-btn.active {
+    background-color: #89A3AD;
+    border: 1px solid #89A3AD;
+    color: white;
+}
+
+/* Dropdown styling */
+.dropdown-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    background-color: #89A3AD;
+    height: 80px;
+    padding: 20px;
+    color: white;
+}
+
+.dropdown-container select,
+.dropdown-container button {
+    padding: 6px 12px;
+    border-radius: 5px;
+    border: 1px solid #ced9dd;
+    background-color: #ced9dd;
+    font-size: 14px;
+}
+
+.dropdown-container button {
+    background-color: #406882;
+    color: white;
+    font-weight: bold;
+    border: none;
+    width: 32px;
+    height: 32px;
+    line-height: 1;
+    font-size: 20px;
+    padding: 0;
+    text-align: center;
+}
+
+/* Chart container */
+.bar-container {
+    background-color: white;
+    padding: 20px;
+    height: 550px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.bar-container canvas {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 95%;
+    margin-bottom: 10px;
+    object-fit: contain;
+    display: block;
+}
+
+/* Table container on the right */
+.table-months-container,
+.table-years-container {
+    position: relative;
+    width: 300px;
+    background-color: white;
+    padding: 10px;
+    height: 550px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#monthYearTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+#yearTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+#monthYearTable thead th {
+    background-color: #1f4d66;
+    margin-top: 5px;
+    z-index: 5;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-size: 16px;
+}
+
+#yearTable thead th {
+    background-color: #1f4d66;
+    margin-top: 5px;
+    z-index: 5;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-size: 16px;
+}
+
+#monthYearTable tbody td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+    cursor: pointer;
+}
+
+#yearTable tbody td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+    cursor: pointer;
+}
+
+.table-inner-container{
+    overflow: auto;
+    display: flex;
+}
+
+.table-months-container button {
+    padding: 10px;
+    background-color: darkred;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: auto;
+    width: 100%;
+}
+
+.table-years-container button {
+    padding: 10px;
+    background-color: darkred;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: auto;
+    width: 100%;
+}
+
+/* Clear button */
+.clear-button-container {
+    z-index: 5;
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+.table-months-container button:hover {
+    background-color: #8b0000;
+}
+
+/* Title & Subtitle */
+.content-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.content-header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.subtitle {
+    color: #718096;
+    font-size: 0.875rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.hidden {
+    display: none;
+}
+
+/* RESPONSIVE DESIGN - MEDIA QUERIES */
+
+/* Large Desktop (1200px and up) */
+@media (min-width: 1200px) {
+    .container-monthly,
+    .container-yearly {
+        gap: 20px;
+    }
+    
+    .content-header h1 {
+        font-size: 1.75rem;
+    }
+    
+    .table-months-container,
+    .table-years-container {
+        width: 350px;
+        height: 600px;
+        padding: 15px;
+    }
+    
+    .dropdown-container {
+        height: 90px;
+        padding: 25px;
+    }
+    
+    .dropdown-container select,
+    .dropdown-container button {
+        font-size: 16px;
+        padding: 8px 14px;
+    }
+    
+    .bar-container {
+        padding: 25px;
+        height: 600px;
+    }
+    
+    #monthYearTable,
+    #yearTable {
+        font-size: 16px;
+    }
+    
+    #monthYearTable thead th,
+    #yearTable thead th {
+        font-size: 18px;
+        padding: 12px;
+    }
+    
+    #monthYearTable tbody td,
+    #yearTable tbody td {
+        padding: 10px 12px;
+    }
+}
+
+/* Desktop (992px to 1199px) */
+@media (max-width: 1199px) and (min-width: 992px) {
+    .container-monthly,
+    .container-yearly {
+        gap: 15px;
+    }
+    
+    .content-header h1 {
+        font-size: 1.6rem;
+    }
+    
+    .table-months-container,
+    .table-years-container {
+        width: 320px;
+        height: 570px;
+        padding: 12px;
+    }
+    
+    .dropdown-container {
+        height: 85px;
+        padding: 22px;
+    }
+    
+    .dropdown-container select,
+    .dropdown-container button {
+        font-size: 15px;
+        padding: 7px 13px;
+    }
+    
+    .bar-container {
+        padding: 22px;
+        height: 570px;
+    }
+    
+    #monthYearTable,
+    #yearTable {
+        font-size: 15px;
+    }
+    
+    #monthYearTable thead th,
+    #yearTable thead th {
+        font-size: 17px;
+        padding: 11px;
+    }
+    
+    #monthYearTable tbody td,
+    #yearTable tbody td {
+        padding: 9px 11px;
+    }
+}
+
+/* Tablet (768px to 991px) */
+@media (max-width: 991px) and (min-width: 768px) {
+    .container-monthly,
+    .container-yearly {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .content-header {
+        margin-bottom: 1.5rem;
+    }
+    
+    .content-header h1 {
+        font-size: 1.4rem;
+    }
+    
+    .header-actions {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    
+    .tab-header {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .tab-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+        margin-right: 0;
+    }
+    
+    .dropdown-container {
+        height: auto;
+        min-height: 80px;
+        padding: 15px;
+        justify-content: center;
+    }
+    
+    .dropdown-container select,
+    .dropdown-container button {
+        font-size: 14px;
+        padding: 6px 12px;
+    }
+    
+    .bar-container {
+        padding: 15px;
+        height: 400px;
+    }
+    
+    .table-months-container,
+    .table-years-container {
+        width: 100%;
+        height: 400px;
+        padding: 15px;
+    }
+    
+    #monthYearTable,
+    #yearTable {
+        font-size: 14px;
+    }
+    
+    #monthYearTable thead th,
+    #yearTable thead th {
+        font-size: 16px;
+        padding: 10px;
+    }
+    
+    #monthYearTable tbody td,
+    #yearTable tbody td {
+        padding: 8px 10px;
+    }
+    
+    .table-months-container button,
+    .table-years-container button {
+        padding: 12px;
+        font-size: 14px;
+    }
+}
+
+/* Mobile Large (576px to 767px) */
+@media (max-width: 767px) and (min-width: 576px) {
+    .container-monthly,
+    .container-yearly {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .content-header {
+        margin-bottom: 1rem;
+    }
+    
+    .content-header h1 {
+        font-size: 1.3rem;
+    }
+    
+    .subtitle {
+        font-size: 0.8rem;
+    }
+    
+    .header-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .tab-header {
+        flex-direction: column;
+        gap: 3px;
+    }
+    
+    .tab-btn {
+        padding: 8px 16px;
+        font-size: 13px;
+        margin-right: 0;
+        border-radius: 6px;
+        margin-bottom: 0;
+    }
+    
+    .dropdown-container {
+        height: auto;
+        min-height: 70px;
+        padding: 12px;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .dropdown-container select,
+    .dropdown-container button {
+        font-size: 13px;
+        padding: 5px 10px;
+    }
+    
+    .dropdown-container button {
+        width: 28px;
+        height: 28px;
+        font-size: 18px;
+    }
+    
+    .bar-container {
+        padding: 12px;
+        height: 350px;
+    }
+    
+    .table-months-container,
+    .table-years-container {
+        width: 100%;
+        height: 350px;
+        padding: 12px;
+    }
+    
+    #monthYearTable,
+    #yearTable {
+        font-size: 13px;
+        overflow-x: auto;
+        display: block;
+    }
+    
+    #monthYearTable thead th,
+    #yearTable thead th {
+        font-size: 15px;
+        padding: 8px;
+    }
+    
+    #monthYearTable tbody td,
+    #yearTable tbody td {
+        padding: 6px 8px;
+    }
+    
+    .table-months-container button,
+    .table-years-container button {
+        padding: 10px;
+        font-size: 13px;
+    }
+}
+
+/* Mobile Small (up to 575px) */
+@media (max-width: 575px) {
+    .container-monthly,
+    .container-yearly {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .content-header {
+        margin-bottom: 0.75rem;
+    }
+    
+    .content-header h1 {
+        font-size: 1.2rem;
+    }
+    
+    .subtitle {
+        font-size: 0.75rem;
+    }
+    
+    .header-actions {
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+    
+    .tab-header {
+        flex-direction: column;
+        gap: 2px;
+    }
+    
+    .tab-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        margin-right: 0;
+        border-radius: 4px;
+        margin-bottom: 0;
+    }
+    
+    .dropdown-container {
+        height: auto;
+        min-height: 60px;
+        padding: 10px;
+        justify-content: center;
+        gap: 6px;
+    }
+    
+    .dropdown-container select,
+    .dropdown-container button {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+    
+    .dropdown-container button {
+        width: 26px;
+        height: 26px;
+        font-size: 16px;
+    }
+    
+    .bar-container {
+        padding: 10px;
+        height: 300px;
+    }
+    
+    .table-months-container,
+    .table-years-container {
+        width: 100%;
+        height: 300px;
+        padding: 10px;
+    }
+    
+    #monthYearTable,
+    #yearTable {
+        font-size: 12px;
+        overflow-x: auto;
+        display: block;
+        min-width: 400px;
+    }
+    
+    #monthYearTable thead th,
+    #yearTable thead th {
+        font-size: 14px;
+        padding: 6px;
+    }
+    
+    #monthYearTable tbody td,
+    #yearTable tbody td {
+        padding: 4px 6px;
+    }
+    
+    .table-months-container button,
+    .table-years-container button {
+        padding: 8px;
+        font-size: 12px;
+    }
+}
+
+/* Extra Small Mobile (up to 375px) */
+@media (max-width: 375px) {
+    .content-header h1 {
+        font-size: 1.1rem;
+    }
+    
+    .subtitle {
+        font-size: 0.7rem;
+    }
+    
+    .tab-btn {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+    
+    .dropdown-container {
+        padding: 8px;
+        gap: 4px;
+    }
+    
+    .dropdown-container select,
+    .dropdown-container button {
+        font-size: 11px;
+        padding: 3px 6px;
+    }
+    
+    .dropdown-container button {
+        width: 24px;
+        height: 24px;
+        font-size: 14px;
+    }
+    
+    .bar-container {
+        padding: 8px;
+    }
+    
+    .table-months-container,
+    .table-years-container {
+        height: 280px;
+        padding: 8px;
+    }
+    
+    #monthYearTable,
+    #yearTable {
+        font-size: 11px;
+        min-width: 350px;
+    }
+    
+    #monthYearTable thead th,
+    #yearTable thead th {
+        font-size: 13px;
+        padding: 4px;
+    }
+    
+    #monthYearTable tbody td,
+    #yearTable tbody td {
+        padding: 3px 4px;
+    }
+    
+    .table-months-container button,
+    .table-years-container button {
+        padding: 6px;
+        font-size: 11px;
+    }
+}
+
+/* Landscape orientation adjustments for mobile */
+@media (max-width: 767px) and (orientation: landscape) {
+    .container-monthly,
+    .container-yearly {
+        flex-direction: row;
+        gap: 10px;
+    }
+    
+    .table-months-container,
+    .table-years-container {
+        width: 250px;
+        height: 250px;
+    }
+    
+    .dropdown-container {
+        min-height: 50px;
+        padding: 8px;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .tab-btn {
+        border: 2px solid #000;
+    }
+    
+    #monthYearTable,
+    #yearTable {
+        border: 2px solid #000;
+    }
+    
+    #monthYearTable th,
+    #yearTable th {
+        border-bottom: 2px solid #000;
+    }
+    
+    #monthYearTable td,
+    #yearTable td {
+        border-bottom: 1px solid #000;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .tab-btn,
+    #monthYearTable tbody td,
+    #yearTable tbody td {
+        transition: none;
+    }
+}
+
+/* Print styles */
+@media print {
+    .header-actions,
+    .tab-header,
+    .dropdown-container,
+    .table-months-container button,
+    .table-years-container button {
+        display: none !important;
+    }
+    
+    .container-monthly,
+    .container-yearly {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .table-months-container,
+    .table-years-container {
+        width: 100%;
+        height: auto;
+        padding: 0;
+    }
+    
+    #monthYearTable,
+    #yearTable {
+        overflow: visible;
+        display: table;
+        min-width: auto;
+    }
+    
+    #monthYearTable thead th,
+    #yearTable thead th {
+        background-color: #000 !important;
+        color: #fff !important;
+    }
+}
+
+.bar-container,
+.table-months-container,
+.table-years-container {
+    height: 550px;
+}
+
+@media (min-width: 1200px) {
+    .bar-container,
+    .table-months-container,
+    .table-years-container {
+        height: 600px;
+    }
+}
+
+@media (max-width: 1199px) and (min-width: 992px) {
+    .bar-container,
+    .table-months-container,
+    .table-years-container {
+        height: 570px;
+    }
+}

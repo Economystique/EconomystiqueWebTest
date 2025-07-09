@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+
+{% block title %}POS - Economystique{% endblock %}
+
+{% block header_title %}Point of Sale{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pos.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="whole-container">
+    <div class="pos-container">
+        <div class="reflect-scanned">
+            <!--this part has no use yet. just a container for the bar code scanner reflection-->
+            <div class="product-image-large">
+                <!--img-->
+            </div>
+            <div class="product-info">
+                <!--add-->
+            </div>
+            <div class="quantity">
+                <!--add-->
+            </div>
+        </div>
+
+    <div class="products-section">
+        <div class="search-bar">
+            <input type="text" id="searchProducts" placeholder="Search products...">
+        </div>
+
+        <div class="products-grid">
+            {% for product in products %}
+            <div class="product-card" data-name="{{ product.name | lower }}" data-id="{{ product.id }}">
+                <div class="product-image-small">
+                    {% if product.image %}
+                    <img src="{{ url_for('static', filename='img/products/' + product.image) }}" alt="{{ product.name }}">
+                    {% else %}
+                    <img src="{{ url_for('static', filename='img/item_white_bkgd.png') }}" alt="Default product image">
+                    {% endif %}
+                </div>
+                <div class="product-infos">
+                    <div class="product-info-col">
+                        <h5>{{ product.name }}</h5>
+                        <p class="price">₱{{ "%.2f"|format(product.price) }}</p>
+                        <p class="stock">Stock: {{ product.stock }}</p>
+                    </div>
+                    <div class="qty-selector" data-id="{{ product.id }}">
+                        <button class="qty-btn minus" type="button">-</button>
+                        <input class="qty-input" type="text" value="0" />
+                        <button class="qty-btn plus" type="button">+</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <p id="noResults" style="display:none; text-align:center; margin-top: 1rem;">No products found.</p>
+        </div>
+    </div>
+
+    <div class="cart-section">
+        <div class="cart-header">
+            <h2 style="margin: 0">Cart</h2>
+            <button onclick="clearCart()">🗑️</button>
+        </div>
+        <table class="cart-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            </tbody>
+        </table>
+        <div class="cart-items" id="cartItems">
+            <!-- Items added via JS -->
+        </div>
+        <div class="cart-summary">
+            <div><span>Subtotal</span><span id="subtotal">₱0.00</span></div>
+            <div><span>VAT (12%)</span><span id="tax">₱0.00</span></div>
+            <div style="font-weight:bold;"><span>Total</span><span id="total">₱0.00</span></div>
+            <button class="btn-checkout" onclick="checkout()">Checkout</button>
+        </div>
+    </div>
+    <div id="confirmModal" class="modal hidden">
+        <div class="checkout-modal-content">
+            <div class="checkout-left">
+                <h3>Cart Summary</h3>
+                <table class="modal-cart-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Qty</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalCartBody">
+                        <!-- populated via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="checkout-right">
+                <div class="summary-box">
+                    <p class="subtotal"><strong>Subtotal:</strong> <span id="modalSubtotal">₱0.00</span></p>
+                    <p class="vat"><strong>VAT (12%):</strong> <span id="modalTax">₱0.00</span></p>
+                    <p class="total"><strong>Total:</strong> <span class="total-value" id="modalTotal">₱0.00</span></p>
+                </div>
+
+                <div class="amount-tendered-box">
+                    <label for="amountTendered"><strong>Amount Tendered</strong></label>
+                    <input type="number" id="amountTendered" min="0" step="0.01" />
+                    <p id="changeAmount"><strong>Change:</strong> <span id="change-value">₱0.00</span></p>
+                </div>
+
+                <div class="confirm-buttons">
+                    <button id="confirmYesBtn" class="btn-primary" disabled>Confirm</button>
+                    <button id="confirmCancelBtn" class="btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function updateCartUI() {
+        fetch('/get_pos_cart')
+            .then(response => response.json())
+            .then(cart => {
+                const tbody = document.querySelector('.cart-table tbody');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+                let total = 0;
+
+                // Reset stock displays and '+' buttons
+                document.querySelectorAll('.product-card').forEach(card => {
+                    const id = card.getAttribute('data-id');
+                    const stock = originalStocks[id];
+                    const stockEl = card.querySelector('.product-infos .stock');
+                    if (stockEl) stockEl.textContent = `Stock: ${stock}`;
+
+                    const plusBtn = card.querySelector('.qty-btn.plus');
+                    if (plusBtn) plusBtn.disabled = stock <= 0;
+
+                    // Reset classes
+                    card.classList.remove('disabled', 'out-of-stock');
+                    
+                    const qtyInCart = (window.cartQuantities?.[id] || 0);
+                    if (stock <= 0 && qtyInCart === 0) {
+                        card.classList.add('disabled');
+                    }
+                });
+
+                // Apply cart data and adjust visible stock
+                cart.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.inv_desc}</td>
+                        <td>${item.quantity}</td>
+                        <td>₱${parseFloat(item.price).toFixed(2)}</td>
+                        <td>₱${parseFloat(item.total).toFixed(2)}</td>
+                    `;
+                    tbody.appendChild(row);
+                    total += item.total;
+
+                    const card = document.querySelector(`.product-card[data-id="${item.inv_id}"]`);
+                    const remaining = originalStocks[item.inv_id] - item.quantity;
+                    // Update stock text
+                    const stockEl = card?.querySelector('.product-infos .stock');
+                    if (stockEl) {
+                        stockEl.textContent = `Stock: ${remaining <= 0 ? '0 (in cart)' : remaining}`;
+                    }
+
+                    // Update visual state
+                    card.classList.remove('out-of-stock');
+                    if (remaining <= 0) {
+                        card.classList.add('out-of-stock');
+                    }
+
+                    const plusBtn = card.querySelector('.qty-btn.plus');
+                    if (plusBtn) plusBtn.disabled = remaining <= 0;
+                });
+
+                const tax = total * 0.12;
+                const subtotal = total - tax;
+                document.getElementById('subtotal').textContent = `₱${subtotal.toFixed(2)}`;
+                document.getElementById('tax').textContent = `₱${tax.toFixed(2)}`;
+                document.getElementById('total').textContent = `₱${total.toFixed(2)}`;
+
+                updateQtySelectors(cart);
+            })
+            .catch(err => console.error("Failed to update cart:", err));
+    }
+
+    function addToCart(id, name, price, stock) {
+        const card = document.querySelector(`.product-card[data-id="${id}"]`);
+        const stockEl = card?.querySelector('.stock');
+        const currentStock = stockEl ? parseInt(stockEl.textContent.replace(/\D/g, '')) : 0;
+
+        if (currentStock <= 0) return;
+
+        fetch('/add_to_pos_cart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ inv_id: id, inv_desc: name, price: price })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') updateCartUI();
+            else alert(data.message || "Failed to add.");
+        });
+    }
+
+    function clearCart() {
+        fetch('/clear_pos_cart', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'cleared') {
+                    updateCartUI();
+                }
+            });
+    }
+
+    function checkout() {
+        fetch('/get_pos_cart')
+            .then(res => res.json())
+            .then(cart => {
+                const modalBody = document.getElementById('modalCartBody');
+                const subtotalEl = document.getElementById('modalSubtotal');
+                const taxEl = document.getElementById('modalTax');
+                const totalEl = document.getElementById('modalTotal');
+
+                let total = 0;
+                modalBody.innerHTML = '';
+
+                cart.forEach(item => {
+                    const row = document.createElement('tr');
+                    const itemTotal = item.price * item.quantity;
+                    total += itemTotal;
+
+                    row.innerHTML = `
+                        <td>${item.inv_desc}</td>
+                        <td>${item.quantity}</td>
+                        <td>₱${parseFloat(item.price).toFixed(2)}</td>
+                        <td>₱${itemTotal.toFixed(2)}</td>
+                    `;
+                    modalBody.appendChild(row);
+                });
+
+                const tax = total * 0.12;
+                const subtotal = total - tax;
+
+                subtotalEl.textContent = `₱${subtotal.toFixed(2)}`;
+                taxEl.textContent = `₱${tax.toFixed(2)}`;
+                totalEl.textContent = `₱${total.toFixed(2)}`;
+
+                document.getElementById('confirmModal').classList.remove('hidden');
+        });
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('confirmModal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('searchProducts');
+        const productCards = document.querySelectorAll('.product-card');
+        window.originalStocks = {};
+        window.cartQuantities = {};
+
+        productCards.forEach(card => {
+            const id = card.getAttribute('data-id');
+            const stock = parseInt(card.querySelector('.stock')?.textContent.replace(/\D/g, '')) || 0;
+            originalStocks[id] = stock;
+
+            const name = card.querySelector('h5').textContent;
+            const price = parseFloat(card.querySelector('.price').textContent.replace(/[^\d.]/g, ''));
+
+            card.addEventListener('click', (e) => {
+                // prevent add if qty-selector was clicked
+                if (e.target.closest('.qty-selector')) return;
+
+                // prevent add if card is marked as disabled
+                if (card.classList.contains('disabled')) return;
+
+                addToCart(id, name, price, originalStocks[id]);
+            });
+        });
+
+        document.querySelectorAll('.qty-selector').forEach(selector => {
+            const id = selector.getAttribute('data-id');
+            const plus = selector.querySelector('.plus');
+            const minus = selector.querySelector('.minus');
+            const input = selector.querySelector('.qty-input');
+
+            plus.addEventListener('click', () => {
+                const card = document.querySelector(`.product-card[data-id="${id}"]`);
+                const name = card.querySelector('h5').textContent;
+                const price = parseFloat(card.querySelector('.price').textContent.replace(/[^\d.]/g, ''));
+                const stock = parseInt(card.querySelector('.stock').textContent.replace(/\D/g, ''));
+                if (stock > 0) addToCart(id, name, price, stock);
+            });
+
+            minus.addEventListener('click', () => {
+                if ((window.cartQuantities[id] || 0) > 0) {
+                    fetch('/remove_from_pos_cart', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ inv_id: id })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') updateCartUI();
+                    });
+                }
+            });
+
+            input.addEventListener('input', () => {
+                input.value = input.value.replace(/[^\d]/g, '');
+            });
+
+            input.addEventListener('blur', () => {
+                handleQtyInputChange(id, input);
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') input.blur();
+            });
+        });
+
+        function handleQtyInputChange(id, input) {
+            let val = parseInt(input.value) || 0;
+            const stock = originalStocks[id];
+            val = Math.min(Math.max(0, val), stock);
+
+            const current = cartQuantities[id] || 0;
+            const diff = val - current;
+
+            if (diff === 0) return;
+
+            const method = diff > 0 ? 'add_to_pos_cart' : 'remove_from_pos_cart';
+            const payload = {
+                inv_id: id,
+                inv_desc: document.querySelector(`.product-card[data-id="${id}"] h5`).textContent,
+                price: parseFloat(document.querySelector(`.product-card[data-id="${id}"] .price`).textContent.replace(/[^\d.]/g, ''))
+            };
+
+            const actions = Array.from({ length: Math.abs(diff) }, () => {
+                return fetch(`/${method}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            });
+
+            Promise.all(actions)
+                .then(() => updateCartUI())
+                .catch(err => console.error("Failed to update quantity:", err));
+        }
+        
+        // Reflect quantity values in selectors
+        window.updateQtySelectors = function(cart) {
+            document.querySelectorAll('.qty-input').forEach(i => i.value = 0);
+            cartQuantities = {};
+            cart.forEach(item => {
+                cartQuantities[item.inv_id] = item.quantity;
+                const selector = document.querySelector(`.qty-selector[data-id="${item.inv_id}"]`);
+                if (selector) {
+                    selector.querySelector('.qty-input').value = item.quantity;
+                }
+            });
+        };
+
+        document.getElementById('confirmCancelBtn')?.addEventListener('click', closeModal);
+        document.getElementById('confirmYesBtn')?.addEventListener('click', () => {
+            fetch('/finalize_checkout', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('Checkout successful!');
+                        closeModal();
+                        updateCartUI(); // refresh UI
+                    } else {
+                        alert(data.message || "Checkout failed.");
+                    }
+                })
+                .catch(err => {
+                    console.error("Checkout error:", err);
+                    alert("Unexpected error occurred during checkout.");
+                });
+        });
+
+        window.addEventListener('click', function (e) {
+            const modal = document.getElementById('confirmModal');
+            if (e.target === modal) closeModal();
+        });
+
+        searchInput?.addEventListener('input', () => {
+            const term = searchInput.value.toLowerCase();
+            let visible = 0;
+            productCards.forEach(card => {
+                const name = card.dataset.name;
+                const match = name.includes(term);
+                card.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+            document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+        });
+
+        updateCartUI();
+
+        const amountInput = document.getElementById('amountTendered');
+        const confirmBtn = document.getElementById('confirmYesBtn');
+
+        function validateAmountTendered() {
+            const totalText = document.getElementById('modalTotal').textContent;
+            const totalValue = parseFloat(totalText.replace(/[^\d.]/g, '')) || 0;
+            const amount = parseFloat(amountInput.value) || 0;
+            const changeDisplay = document.getElementById('changeAmount');
+
+            if (amount >= totalValue && totalValue > 0) {
+                confirmBtn.disabled = false;
+                amountInput.classList.remove('invalid');
+                amountInput.classList.add('valid');
+
+                const change = amount - totalValue;
+                changeDisplay.textContent = `Change: ₱${change.toFixed(2)}`;
+            } else {
+                confirmBtn.disabled = true;
+                amountInput.classList.remove('valid');
+                amountInput.classList.add('invalid');
+                changeDisplay.textContent = `Change: ₱0.00`;
+            }
+        }
+
+        // Listen for input changes
+        amountInput.addEventListener('input', validateAmountTendered);
+    });
+</script>
+{% endblock %}
