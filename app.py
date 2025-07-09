@@ -122,7 +122,7 @@ def login_required(f):
 @app.route('/')
 def index():
     if 'username' in session:
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('products'))
     return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -140,7 +140,7 @@ def login():
         if result and bcrypt.checkpw(password, result['pw_hash'].encode('utf-8')):
             session['username'] = result['user_name']
             flash('Login successful!', 'success')
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('products'))
         else:
             flash('Invalid username or password.', 'error')
 
@@ -186,73 +186,8 @@ def logout():
     flash('You have been logged out.', 'success')
     return redirect(url_for('login'))
 
-@app.route('/dashboard')
-@login_required
-def dashboard():
-    # Dummy data for expired products
-    near_expiry = [
-        {'name': 'Milk', 'quantity': 45, 'expiry_date': '2024-03-15'},
-        {'name': 'Yogurt', 'quantity': 30, 'expiry_date': '2024-03-16'},
-        {'name': 'Bread', 'quantity': 25, 'expiry_date': '2024-03-14'},
-        {'name': 'Fresh Juice', 'quantity': 20, 'expiry_date': '2024-03-15'},
-        {'name': 'Cheese', 'quantity': 15, 'expiry_date': '2024-03-13'}
-    ]
-
-    #Dummy data for critical items
-    critical_items = [
-        {
-            'name': 'Milk',
-            'quantity': 45,
-            
-        },
-        {
-            'name': 'Milk',
-            'quantity': 45,
-            
-        },
-        {
-            'name': 'Milk',
-            'quantity': 45,
-            
-        },
-        {
-            'name': 'Milk',
-            'quantity': 45,
-            
-        },{
-            'name': 'Milk',
-            'quantity': 45,
-            
-        }
-    ]
-    
-    daily_sales = []
-    labels = []
-
-    for i in range(9, -1, -1):
-        date_check = date.today() - timedelta(days=i)
-        year = date_check.year
-        month = date_check.strftime('%b').lower()
-        day = date_check.day
-        table_name = f"d0{day}" if day < 10 else f"d{day}"
-
-        try:
-            db_path = os.path.join(f'db/salesdb/daily/sales_d{year}', f'{month}_{year}.db')
-            with sqlite3.connect(db_path) as dconn:
-                dcursor = dconn.cursor()
-                dcursor.execute(f"SELECT SUM(quantity_sold * price) FROM {table_name}")
-                total = dcursor.fetchone()[0] or 0
-        except Exception:
-            total = 0
-
-        labels.append(date_check.strftime('%b %d'))
-        daily_sales.append(total)
-
-    return render_template('dashboard.html',
-                        labels=labels,
-                        quantities=daily_sales,
-                        near_expiry=near_expiry,
-                        critical_items=critical_items)
+# Remove the dashboard and performance comparison routes and their logic
+# (REMOVED: dashboard and performance_comparison route functions and related logic)
 
 @app.route('/api/top_least/<period>')
 @login_required
@@ -726,116 +661,11 @@ def get_sales_data(period):
             'table': result
         })
 
-@app.route('/sales_forecast', methods=['GET'])
-@login_required
-def sales_forecast():
-    product_id = request.args.get('product', type=int)
+# Remove sales forecast route and function
+# (REMOVED: sales_forecast route and all related logic)
 
-    # Load product list
-    conn = sqlite3.connect(os.path.join('db', 'inventory_db.db'))
-    cur = conn.cursor()
-    cur.execute("SELECT inv_id, inv_desc FROM inv_static")
-    products = [{'id': row[0], 'name': row[1]} for row in cur.fetchall()]
-    conn.close()
-
-    selected = next((p for p in products if p['id'] == product_id), None)
-
-    # If no product selected or invalid, return empty chart (for page load)
-    if not product_id or not selected:
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify({
-                'labels': [],
-                'actual_data': [],
-                'forecast_data_full_line': []
-            })
-        return render_template('sales_forecast.html',
-                               products=products,
-                               selected_product_id=None,
-                               labels=[],
-                               actual_data=[],
-                               forecast_data_full_line=[],
-                               sales_trend_message=None)
-
-    # Build time series from past 181 days including today
-    today = datetime.today().date()
-    dates = [today - timedelta(days=i) for i in range(180, -1, -1)]
-    sales = []
-
-    for d in dates:
-        db_year = f"sales_d{d.year}"
-        db_month = f"{d.strftime('%b').lower()}_{d.year}.db"
-        db_path = os.path.join('db', 'salesdb', 'daily', db_year, db_month)
-        table = f"d{d.day:02d}"
-        total = 0
-        if os.path.exists(db_path):
-            try:
-                with sqlite3.connect(db_path) as c:
-                    cur = c.cursor()
-                    cur.execute(f"SELECT SUM(sales_total) FROM {table} WHERE inv_id = ?", (product_id,))
-                    res = cur.fetchone()
-                    total = res[0] if res and res[0] else 0
-            except sqlite3.Error:
-                total = 0
-        sales.append(total)
-
-    # Build pandas Series
-    ts = pd.Series(sales, index=pd.to_datetime(dates))
-
-    # Holt-Winters forecast
-    model = ExponentialSmoothing(ts, trend='add', seasonal=None)
-    fit = model.fit(optimized=True)
-    forecast = fit.forecast(6)  # Next 6 days
-
-    # Build 13-day window: 6 past days + today + 6 future days
-    past_7_days = [today - timedelta(days=i) for i in range(6, -1, -1)]
-    actual_window_series = ts[ts.index.date >= past_7_days[0]]
-
-    full_window = pd.concat([actual_window_series, forecast])
-    labels = [d.strftime('%b %d').lower() for d in full_window.index.date]
-    actual_data = actual_window_series.tolist()
-    forecast_data_full_line = actual_data + forecast.tolist()
-
-    # Return JSON for AJAX
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return jsonify({
-            'labels': labels,
-            'actual_data': actual_data,
-            'forecast_data_full_line': forecast_data_full_line
-        })
-
-    # Return full HTML for normal request
-    return render_template("sales_forecast.html",
-                           products=products,
-                           selected_product_id=product_id,
-                           labels=labels,
-                           actual_data=actual_data,
-                           forecast_data_full_line=forecast_data_full_line,
-                           sales_trend_message=None)
-
-@app.route('/performance_comparison')
-@login_required
-def performance_comparison():
-    months = list(month_table_map.keys())
-    years = get_available_years()
-    return render_template('performance_comparison.html', months=months, years=years)
-
-@app.route('/get_performance_data')
-@login_required
-def get_performance_data():
-    month = request.args.get('month')
-    year = request.args.get('year')
-    total = get_month_total_from_db(year, month)
-    return jsonify({
-        'labels': ['Total Sales'],
-        'values': [total]
-    })
-
-@app.route('/get_year_performance_data')
-@login_required
-def get_year_performance_data():
-    year = request.args.get('year')
-    monthly_totals = get_year_totals_from_db(year)
-    return jsonify({'monthly_totals': monthly_totals})
+# Remove or comment out the dashboard and performance_comparison route functions
+# (REMOVED: get_performance_data, get_year_performance_data, and any other performance comparison logic)
 
 @app.route('/wastage')
 @login_required

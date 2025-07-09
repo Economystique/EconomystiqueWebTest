@@ -41,23 +41,28 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <br><br>
+                    <!--<br><br>-->
                     <div class="form-quantity">
                         <label>Quantity <span id="unit-label" style="color:gray; font-size:0.95em;"></span></label>
                         <br>
                         <input type="number" placeholder="Enter quantity">
                     </div>
-                    <br><br>
+                    <!--<br><br>-->
                     <div class="form-cost">
                         <label>Cost</label>
                         <br>
                         <input type="number" placeholder="Enter cost">
                     </div>
-                    <br><br>
+                    <!--<br><br>-->
                     <div class="form-date">
                         <label>Expiration Date</label>
                         <br>
                         <input type="date">
+                    </div>
+                    <!--<br><br>-->
+                    <!-- Add button positioned below expiry date -->
+                    <div class="form-add-button">
+                        <button class="btn btn-add">Add</button>
                     </div>
                 </div>
             </div>
@@ -80,19 +85,19 @@
                     </table>
                 </div>
             </div>
+            
+            <!--for clear all button - now inside scrollable area -->
+            <div class="action-buttons-one">
+                <button class="btn btn-clear">Clear All</button>
+            </div>
+
+            <!--for confirm and cancel buttons - now inside scrollable area -->
+            <div class="action-buttons-two">
+                <button class="btn btn-confirm">Confirm</button>
+                <button class="btn btn-cancel">Cancel</button>
+            </div>
         </div>
     </div>
-    <!--for add and clear all buttons-->
-        <div class="action-buttons-one">
-            <button class="btn btn-add">Add</button>
-            <button class="btn btn-clear">Clear All</button>
-        </div>
-
-        <!--for confirm and cancel buttons-->
-        <div class="action-buttons-two">
-            <button class="btn btn-confirm">Confirm</button>
-            <button class="btn btn-cancel">Cancel</button>
-        </div>
 </div>
 
 <!-- ─────────────── TAB: ADD NEW ─────────────── -->
