@@ -1,5 +1,7 @@
 .whole-container {
     padding: 10px;
+    position: relative;
+    width: 100%;
 }
 
 .card {
@@ -577,8 +579,20 @@
 
 /* Mobile Large (576px to 767px) */
 @media (max-width: 767px) and (min-width: 576px) {
+    /* Override base container overflow for mobile scrolling */
+    .window-container,
+    .app-container {
+        overflow: visible !important;
+    }
+    
+    .main-content {
+        overflow: visible !important;
+    }
+    
     .whole-container {
         padding: 8px;
+        padding-bottom: 20px;
+        position: relative;
     }
     
     .card {
@@ -591,12 +605,14 @@
     
     .card.personal-container {
         height: auto;
+        min-height: auto;
         padding: 30px 15px;
         padding-left: 15px;
     }
     
     .card.business-container {
         height: auto;
+        min-height: auto;
         padding: 30px 15px;
         padding-left: 15px;
     }
@@ -643,7 +659,26 @@
         text-align: center;
     }
     
+    /* Medium mobile editable inputs */
+    .editable-input,
+    .editable-select {
+        width: 100%;
+        max-width: 320px;
+        min-width: auto;
+        font-size: 18px;
+        height: 42px;
+        padding: 9px 14px;
+        margin: 6px 0;
+    }
+    
     .edit-btn {
+        top: 10px;
+        right: 10px;
+        font-size: 14px;
+        padding: 6px 16px;
+    }
+    
+    .save-btn {
         top: 10px;
         right: 10px;
         font-size: 14px;
@@ -661,12 +696,75 @@
     .change-username-link {
         font-size: 18px;
     }
+    
+    /* Medium mobile modal styles */
+    .modal-content {
+        width: 90%;
+        max-width: 350px;
+        margin: 10% auto;
+    }
+    
+    .modal-header {
+        padding: 15px;
+    }
+    
+    .modal-header h3 {
+        font-size: 16px;
+    }
+    
+    .close {
+        font-size: 24px;
+    }
+    
+    .modal-body {
+        padding: 15px;
+    }
+    
+    .modal-body p {
+        font-size: 14px;
+    }
+    
+    .modal-footer {
+        padding: 10px 15px 15px;
+        gap: 8px;
+    }
+    
+    .modal-btn {
+        padding: 8px 20px;
+        font-size: 14px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-group label {
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+    
+    .form-group input {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
 }
 
 /* Mobile Small (up to 575px) */
 @media (max-width: 575px) {
+    /* Override base container overflow for mobile scrolling */
+    .window-container,
+    .app-container {
+        overflow: visible !important;
+    }
+    
+    .main-content {
+        overflow: visible !important;
+    }
+    
     .whole-container {
         padding: 5px;
+        padding-bottom: 20px;
+        position: relative;
     }
     
     .card {
@@ -680,12 +778,14 @@
     
     .card.personal-container {
         height: auto;
+        min-height: auto;
         padding: 20px 12px;
         padding-left: 12px;
     }
     
     .card.business-container {
         height: auto;
+        min-height: auto;
         padding: 20px 12px;
         padding-left: 12px;
     }
@@ -734,7 +834,26 @@
         margin-bottom: 3px;
     }
     
+    /* Mobile-friendly editable inputs */
+    .editable-input,
+    .editable-select {
+        width: 100%;
+        max-width: 280px;
+        min-width: auto;
+        font-size: 16px;
+        height: 40px;
+        padding: 8px 12px;
+        margin: 5px 0;
+    }
+    
     .edit-btn {
+        top: 8px;
+        right: 8px;
+        font-size: 12px;
+        padding: 5px 12px;
+    }
+    
+    .save-btn {
         top: 8px;
         right: 8px;
         font-size: 12px;
@@ -757,12 +876,75 @@
         font-size: 0.8em;
         margin-bottom: 8px;
     }
+    
+    /* Small mobile modal styles */
+    .modal-content {
+        width: 95%;
+        max-width: 300px;
+        margin: 5% auto;
+    }
+    
+    .modal-header {
+        padding: 12px;
+    }
+    
+    .modal-header h3 {
+        font-size: 15px;
+    }
+    
+    .close {
+        font-size: 22px;
+    }
+    
+    .modal-body {
+        padding: 12px;
+    }
+    
+    .modal-body p {
+        font-size: 13px;
+    }
+    
+    .modal-footer {
+        padding: 8px 12px 12px;
+        gap: 6px;
+    }
+    
+    .modal-btn {
+        padding: 7px 16px;
+        font-size: 13px;
+    }
+    
+    .form-group {
+        margin-bottom: 12px;
+    }
+    
+    .form-group label {
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+    
+    .form-group input {
+        padding: 7px 9px;
+        font-size: 12px;
+    }
 }
 
 /* Extra Small Mobile (up to 375px) */
 @media (max-width: 375px) {
+    /* Override base container overflow for mobile scrolling */
+    .window-container,
+    .app-container {
+        overflow: visible !important;
+    }
+    
+    .main-content {
+        overflow: visible !important;
+    }
+    
     .whole-container {
         padding: 3px;
+        padding-bottom: 15px;
+        position: relative;
     }
     
     .card {
@@ -772,11 +954,15 @@
     }
     
     .card.personal-container {
+        height: auto;
+        min-height: auto;
         padding: 15px 10px;
         padding-left: 10px;
     }
     
     .card.business-container {
+        height: auto;
+        min-height: auto;
         padding: 15px 10px;
         padding-left: 10px;
     }
@@ -811,7 +997,26 @@
         margin-bottom: 2px;
     }
     
+    /* Extra small mobile editable inputs */
+    .editable-input,
+    .editable-select {
+        width: 100%;
+        max-width: 250px;
+        min-width: auto;
+        font-size: 14px;
+        height: 36px;
+        padding: 6px 10px;
+        margin: 4px 0;
+    }
+    
     .edit-btn {
+        top: 6px;
+        right: 6px;
+        font-size: 11px;
+        padding: 4px 10px;
+    }
+    
+    .save-btn {
         top: 6px;
         right: 6px;
         font-size: 11px;
@@ -834,10 +1039,76 @@
         font-size: 0.75em;
         margin-bottom: 6px;
     }
+    
+    /* Extra small mobile modal styles */
+    .modal-content {
+        width: 98%;
+        max-width: 280px;
+        margin: 3% auto;
+    }
+    
+    .modal-header {
+        padding: 10px;
+    }
+    
+    .modal-header h3 {
+        font-size: 14px;
+    }
+    
+    .close {
+        font-size: 20px;
+    }
+    
+    .modal-body {
+        padding: 10px;
+    }
+    
+    .modal-body p {
+        font-size: 12px;
+    }
+    
+    .modal-footer {
+        padding: 6px 10px 10px;
+        gap: 5px;
+    }
+    
+    .modal-btn {
+        padding: 6px 14px;
+        font-size: 12px;
+    }
+    
+    .form-group {
+        margin-bottom: 10px;
+    }
+    
+    .form-group label {
+        font-size: 11px;
+        margin-bottom: 4px;
+    }
+    
+    .form-group input {
+        padding: 6px 8px;
+        font-size: 11px;
+    }
 }
 
 /* Landscape orientation adjustments for mobile */
 @media (max-width: 767px) and (orientation: landscape) {
+    /* Override base container overflow for mobile scrolling */
+    .window-container,
+    .app-container {
+        overflow: visible !important;
+    }
+    
+    .main-content {
+        overflow: visible !important;
+    }
+    
+    .whole-container {
+        padding-bottom: 15px;
+        position: relative;
+    }
+    
     .card {
         flex-direction: row;
         text-align: left;
@@ -845,11 +1116,15 @@
     }
     
     .card.personal-container {
+        height: auto;
+        min-height: auto;
         padding: 20px;
         padding-left: 20px;
     }
     
     .card.business-container {
+        height: auto;
+        min-height: auto;
         padding: 20px;
         padding-left: 20px;
     }
@@ -872,6 +1147,18 @@
     
     .section-label {
         text-align: left;
+    }
+    
+    /* Landscape mobile editable inputs */
+    .editable-input,
+    .editable-select {
+        width: 100%;
+        max-width: 200px;
+        min-width: auto;
+        font-size: 16px;
+        height: 38px;
+        padding: 7px 12px;
+        margin: 4px 0;
     }
 }
 
