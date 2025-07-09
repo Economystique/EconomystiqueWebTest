@@ -9,7 +9,7 @@ import pandas as pd
 import numpy as np
 from datetime import date, datetime, timedelta
 import random
-import torch
+#import torch
 #from transformers import pipeline, GPTNeoForCausalLM, GPT2Tokenizer
 import smtplib
 from email.message import EmailMessage
@@ -19,7 +19,7 @@ from dateutil.relativedelta import relativedelta
 import calendar
 import io
 from collections import defaultdict
-from statsmodels.tsa.holtwinters import ExponentialSmoothing
+#from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
