@@ -1653,62 +1653,64 @@ def get_categories():
 
 @app.route('/api/add_new_product', methods=['POST'])
 def add_new_product():
+    conn = None
     try:
         data = request.get_json()
         
-        # Extract form data
+        # Extract and sanitize input
         inv_desc = data.get('inv_desc', '').strip()
-        barcode = data.get('barcode', '').strip()
+        barcode = data.get('barcode', '').strip() or None  # Treat empty as None
         category = data.get('category', '').strip()
         subcategory = data.get('subcategory', '').strip()
         unit = data.get('unit', '').strip()
-        reorder_point = data.get('reorder_point', 0)
-        price = data.get('price', 0.0)
-        cost = data.get('cost', 0.0)
-        
-        # Validate required fields
+        reorder_point = int(data.get('reorder_point', 0))
+        price = float(data.get('price', 0.0))
+        cost = float(data.get('cost', 0.0))
+        image_data = data.get('image')  # base64 or None
+
+        # Required field validation
         if not inv_desc:
             return jsonify({'success': False, 'message': 'Inventory description is required'})
-        
         if not unit:
             return jsonify({'success': False, 'message': 'Unit is required'})
-        
+
+        # Connect and prepare next inventory ID
         conn = sqlite3.connect(os.path.join('db', 'inventory_db.db'))
         cursor = conn.cursor()
-        
-        # Get the next inventory ID
+
         cursor.execute("SELECT MAX(CAST(SUBSTR(inv_id, 5) AS INTEGER)) FROM inv_static")
         max_id = cursor.fetchone()[0]
         next_id = 1 if max_id is None else max_id + 1
         inv_id = f"INVa{next_id:05d}"
-        
-        # Check if barcode already exists (if provided)
+
+        # Check if barcode is already used (only if provided)
         if barcode:
-            cursor.execute("SELECT inv_id FROM inv_static WHERE barcode = ?", (barcode,))
+            cursor.execute("SELECT 1 FROM inv_static WHERE barcode = ?", (barcode,))
             if cursor.fetchone():
-                conn.close()
-                return jsonify({'success': False, 'message': 'Barcode already exists'})
-        
-        # Get image data
-        image_data = data.get('image')
-        
-        # Insert new product into inv_static
+                return jsonify({'success': False, 'message': 'Barcode already exists. Please enter a different one or leave it blank.'})
+
+        # Insert into database
         cursor.execute("""
             INSERT INTO inv_static (inv_id, inv_desc, cat, sub_cat, unit, rop, barcode, price, cost, image)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (inv_id, inv_desc, category, subcategory, unit, reorder_point, barcode, price, cost, image_data))
-        
+
         conn.commit()
-        conn.close()
-        
+
         return jsonify({
-            'success': True, 
+            'success': True,
             'message': 'Product added successfully',
             'inv_id': inv_id
         })
-        
+
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)})
+        if conn:
+            conn.rollback()
+        return jsonify({'success': False, 'message': 'Error: ' + str(e)})
+
+    finally:
+        if conn:
+            conn.close()
 
 @app.route('/api/restock_cart/clear', methods=['POST'])
 def clear_restock_cart():

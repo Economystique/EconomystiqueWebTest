@@ -6,11 +6,17 @@ import random
 from datetime import date, datetime, timedelta
 
 def edit_database(): 
-    pass
-    # path = os.path.join('db', 'restock_db.db')
-    # conn = sqlite3.connect(path)
-    # cursor = conn.cursor()
     
+    path = os.path.join('db', 'inventory_db.db')
+    conn = sqlite3.connect(path)
+    cursor = conn.cursor()
+    cursor.execute("""
+        
+        DELETE FROM inv_static
+                   
+    """)
+    conn.commit()
+    conn.close()
     # cursor.execute("""
     #     CREATE TABLE IF NOT EXISTS pos_cart(
     #         inv_id TEXT PRIMARY KEY,
